@@ -1,1 +1,877 @@
 
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Code Explainer Pro - Advanced Code Analysis</title>
+  <style>
+    :root {
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --accent: #0f62fe;
+      --accent-hover: #0353e9;
+      --success: #198754;
+      --warning: #ffc107;
+      --danger: #dc3545;
+      --info: #0dcaf0;
+      --shadow: 0 4px 14px rgba(15, 32, 80, 0.06);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font-mono: 'Fira Code', 'Menlo', 'Monaco', 'Courier New', monospace;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --card: #161b22;
+        --muted: #8b949e;
+        --text: #f0f6fc;
+        --border: #30363d;
+      }
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: var(--bg);
+      color: var(--text, #0b1020);
+      padding: 28px;
+      line-height: 1.5;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    
+    h1 { 
+      margin: 0; 
+      font-size: 24px; 
+      background: linear-gradient(90deg, var(--accent), #9c4fff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+    }
+    
+    p.lead { 
+      margin: 4px 0 0 0; 
+      color: var(--muted); 
+      font-size: 14px; 
+      max-width: 600px;
+    }
+    
+    .header-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    
+    .status-connected {
+      background-color: var(--success);
+    }
+    
+    .status-disconnected {
+      background-color: var(--danger);
+    }
+    
+    .connection-panel {
+      background: var(--card);
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      border-left: 4px solid var(--danger);
+      margin-bottom: 20px;
+    }
+    
+    .connection-panel.connected {
+      border-left-color: var(--success);
+    }
+    
+    .connection-panel h3 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .connection-details {
+      font-size: 13px;
+      margin: 0;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    
+    .card {
+      background: var(--card);
+      padding: 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border, rgba(15, 32, 80, 0.04));
+    }
+    
+    .input-section {
+      grid-column: 1;
+    }
+    
+    .output-section {
+      grid-column: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    textarea#codeInput {
+      width: 100%;
+      height: 400px;
+      resize: vertical;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border, #e6e9ef);
+      background: var(--card);
+      color: var(--text, #0b1020);
+      line-height: 1.5;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      border: none;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 6px 18px rgba(15, 98, 254, 0.12);
+    }
+    
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+    
+    .btn-primary:disabled { 
+      opacity: 0.6; 
+      cursor: not-allowed; 
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border, #e6e9ef);
+      color: var(--text, #0b1020);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    
+    .analysis-types {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+    
+    .analysis-btn {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      background: transparent;
+      border: 1px solid var(--border, #e6e9ef);
+      color: var(--muted);
+      cursor: pointer;
+    }
+    
+    .analysis-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    
+    .output-card {
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      background: var(--card);
+      border: 1px solid var(--border, #eaeef6);
+      min-height: 180px;
+      max-height: 300px;
+      overflow: auto;
+      position: relative;
+    }
+    
+    .output-card pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text, #0b1020);
+    }
+    
+    .tab-container {
+      display: flex;
+      border-bottom: 1px solid var(--border, #eaeef6);
+      margin-bottom: 12px;
+    }
+    
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    
+    .tab.active {
+      border-bottom-color: var(--accent);
+      color: var(--text, #0b1020);
+      font-weight: 500;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .language-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--accent);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    
+    .stats {
+      display: flex;
+      gap: 16px;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    footer {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 16px;
+      border-top: 1px solid var(--border, #eaeef6);
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-left: 4px solid var(--accent);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .toast.error {
+      border-left-color: var(--danger);
+    }
+    
+    .toast.success {
+      border-left-color: var(--success);
+    }
+    
+    @media (max-width: 980px) {
+      .grid { 
+        grid-template-columns: 1fr; 
+      }
+      
+      .input-section,
+      .output-section {
+        grid-column: 1;
+      }
+      
+      textarea#codeInput { 
+        height: 300px; 
+      }
+      
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .header-info {
+        align-items: flex-start;
+        margin-top: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Code Explainer Pro</h1>
+        <p class="lead">Advanced code analysis with explanations, refactor suggestions, complexity analysis, and security review. Powered by local Ollama.</p>
+      </div>
+      <div class="header-info">
+        <div class="status-indicator">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Checking connection...</span>
+        </div>
+        <div>Model: <strong id="modelName">{{ model }}</strong></div>
+        <div>Endpoint: <span id="ollamaUrl">{{ ollama_url }}</span></div>
+      </div>
+    </header>
+
+    <div class="connection-panel" id="connectionPanel">
+      <h3><span id="connectionIcon">⚠</span> <span id="connectionTitle">Checking Ollama Connection</span></h3>
+      <p class="connection-details" id="connectionDetails">Verifying that Ollama is running and accessible...</p>
+      <div id="modelList"></div>
+    </div>
+
+    <div class="grid">
+      <div class="card input-section">
+        <div class="card-header">
+          <h2 class="card-title">Source Code</h2>
+          <div class="action-buttons">
+            <button class="btn btn-sm btn-secondary" id="formatBtn" title="Format code">Format</button>
+            <button class="btn btn-sm btn-secondary" id="clearBtn" title="Clear input">Clear</button>
+          </div>
+        </div>
+        <textarea id="codeInput" placeholder="Paste your code here (any language)..."></textarea>
+        
+        <div class="controls">
+          <button id="runBtn" class="btn btn-primary">Analyze Code</button>
+          
+          <div class="analysis-types">
+            <button class="analysis-btn active" data-type="full">Full Analysis</button>
+            <button class="analysis-btn" data-type="explain">Explain Only</button>
+            <button class="analysis-btn" data-type="refactor">Refactor Only</button>
+            <button class="analysis-btn" data-type="complexity">Complexity</button>
+            <button class="analysis-btn" data-type="security">Security</button>
+          </div>
+        </div>
+        
+        <div class="stats">
+          <div class="stat-item">
+            <span>Characters:</span>
+            <span id="charCount">0</span>
+          </div>
+          <div class="stat-item">
+            <span>Lines:</span>
+            <span id="lineCount">0</span>
+          </div>
+          <div class="stat-item">
+            <span>Language:</span>
+            <span id="languageDetected">Unknown</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="output-section">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Analysis Results</h2>
+            <button class="btn btn-sm btn-secondary" id="copyBtn" title="Copy all results">Copy All</button>
+          </div>
+          
+          <div class="tab-container">
+            <div class="tab active" data-tab="explanation">Explanation</div>
+            <div class="tab" data-tab="refactor">Refactor</div>
+            <div class="tab" data-tab="complexity">Complexity</div>
+            <div class="tab" data-tab="security">Security</div>
+          </div>
+          
+          <div class="tab-content active" id="explanationTab">
+            <div class="output-card">
+              <div class="language-badge" id="outputLanguage">Unknown</div>
+              <pre id="explanationOutput">Paste code on the left and click "Analyze Code".</pre>
+            </div>
+          </div>
+          
+          <div class="tab-content" id="refactorTab">
+            <div class="output-card">
+              <pre id="refactorOutput">Refactor suggestions will appear here.</pre>
+            </div>
+          </div>
+          
+          <div class="tab-content" id="complexityTab">
+            <div class="output-card">
+              <pre id="complexityOutput">Complexity analysis will appear here.</pre>
+            </div>
+          </div>
+          
+          <div class="tab-content" id="securityTab">
+            <div class="output-card">
+              <pre id="securityOutput">Security considerations will appear here.</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div>Code Explainer Pro v1.0 - Make sure Ollama is running locally with the appropriate model downloaded.</div>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // DOM elements
+    const runBtn = document.getElementById('runBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const formatBtn = document.getElementById('formatBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const codeInput = document.getElementById('codeInput');
+    const explanationOutput = document.getElementById('explanationOutput');
+    const refactorOutput = document.getElementById('refactorOutput');
+    const complexityOutput = document.getElementById('complexityOutput');
+    const securityOutput = document.getElementById('securityOutput');
+    const charCount = document.getElementById('charCount');
+    const lineCount = document.getElementById('lineCount');
+    const languageDetected = document.getElementById('languageDetected');
+    const outputLanguage = document.getElementById('outputLanguage');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const toast = document.getElementById('toast');
+    const connectionPanel = document.getElementById('connectionPanel');
+    const connectionTitle = document.getElementById('connectionTitle');
+    const connectionDetails = document.getElementById('connectionDetails');
+    const connectionIcon = document.getElementById('connectionIcon');
+    const modelList = document.getElementById('modelList');
+    
+    const MAX_CODE_LENGTH = 18000;
+    let currentAnalysisType = 'full';
+    let currentLanguage = 'unknown';
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      checkOllamaStatus();
+      updateStats();
+      
+      // Set up tabs
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.getAttribute('data-tab');
+          switchTab(tabName);
+        });
+      });
+      
+      // Set up analysis type buttons
+      document.querySelectorAll('.analysis-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.analysis-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentAnalysisType = btn.getAttribute('data-type');
+        });
+      });
+    });
+    
+    // Check Ollama connection status
+    async function checkOllamaStatus() {
+      try {
+        const response = await fetch('/health');
+        const data = await response.json();
+        
+        if (data.ollama_connected) {
+          statusDot.classList.add('status-connected');
+          statusDot.classList.remove('status-disconnected');
+          statusText.textContent = 'Connected to Ollama';
+          connectionPanel.classList.add('connected');
+          connectionIcon.textContent = '✓';
+          connectionTitle.textContent = 'Ollama Connected';
+          connectionDetails.textContent = data.ollama_message || 'Ollama is running and accessible';
+          
+          // Show available models
+          if (data.available_models && data.available_models.length > 0) {
+            modelList.innerHTML = `<p>Available models: ${data.available_models.join(', ')}</p>`;
+          } else {
+            modelList.innerHTML = `<p>No models available. Run 'ollama pull llama2' to download a model.</p>`;
+          }
+        } else {
+          statusDot.classList.add('status-disconnected');
+          statusDot.classList.remove('status-connected');
+          statusText.textContent = 'Ollama not connected';
+          connectionIcon.textContent = '⚠';
+          connectionTitle.textContent = 'Ollama Connection Failed';
+          connectionDetails.textContent = data.ollama_message || 'Cannot connect to Ollama server';
+          modelList.innerHTML = '';
+          
+          showToast('Warning: Ollama is not connected. Analysis will not work.', 'error');
+        }
+      } catch (error) {
+        statusDot.classList.add('status-disconnected');
+        statusDot.classList.remove('status-connected');
+        statusText.textContent = 'Connection failed';
+        connectionIcon.textContent = '❌';
+        connectionTitle.textContent = 'Connection Error';
+        connectionDetails.textContent = 'Could not check Ollama status: ' + error.message;
+        modelList.innerHTML = '';
+        
+        showToast('Error: Could not connect to Ollama server.', 'error');
+      }
+    }
+    
+    // Update character and line count
+    function updateStats() {
+      const code = codeInput.value;
+      const lines = code.split('\n').length;
+      const chars = code.length;
+      
+      charCount.textContent = chars;
+      lineCount.textContent = lines;
+      
+      // Detect language
+      if (code.trim()) {
+        detectLanguage(code);
+      } else {
+        languageDetected.textContent = 'Unknown';
+      }
+    }
+    
+    // Detect programming language
+    async function detectLanguage(code) {
+      // Simple client-side detection
+      const patterns = {
+        'python': [/^import\s+\w/, /^from\s+\w/, /def\s+\w+\(/, /class\s+\w+/, /print\s*\(/, /#.*/],
+        'javascript': [/function\s*\w*\(/, /const\s+|let\s+|var\s+/, /console\.log\(/, /\/\/.*/, /\/\*.*\*\//],
+        'java': [/public\s+class/, /import\s+java/, /System\.out\.print/, /\/\/.*/, /\/\*.*\*\//],
+        'cpp': [/#include\s+<.*>/, /using\s+namespace/, /std::/, /\/\/.*/, /\/\*.*\*\//],
+        'html': [/<!DOCTYPE html>/, /<html/, /<head/, /<body/, /<div/, /<!--.*-->/],
+        'css': [/^\s*\.?\w+\s*\{/, /^\s*@\w+/, /\/\*.*\*\//],
+        'go': [/package\s+\w+/, /import\s*\(/, /func\s+\w+\(/, /\/\/.*/],
+        'rust': [/fn\s+\w+\(/, /let\s+\w+/, /\/\/.*/, /\/\*.*\*\//],
+        'ruby': [/def\s+\w+/, /class\s+\w+/, /#.*/],
+        'php': [/<\?php/, /\$\w+/, /\/\/.*/, /\/\*.*\*\//],
+      };
+      
+      for (const [lang, regexes] of Object.entries(patterns)) {
+        for (const pattern of regexes) {
+          if (pattern.test(code)) {
+            languageDetected.textContent = lang;
+            currentLanguage = lang;
+            return;
+          }
+        }
+      }
+      
+      languageDetected.textContent = 'Unknown';
+      currentLanguage = 'unknown';
+    }
+    
+    // Switch between tabs
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+      document.getElementById(`${tabName}Tab`).classList.add('active');
+    }
+    
+    // Show toast notification
+    function showToast(message, type = '') {
+      toast.textContent = message;
+      toast.className = 'toast';
+      if (type) toast.classList.add(type);
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+    
+    // Run analysis
+    runBtn.addEventListener('click', async () => {
+      const code = codeInput.value;
+      if (!code || !code.trim()) {
+        showToast('Please paste some code in the textarea.', 'error');
+        return;
+      }
+
+      // Check connection first
+      const healthResponse = await fetch('/health');
+      const healthData = await healthResponse.json();
+      
+      if (!healthData.ollama_connected) {
+        showToast('Ollama is not connected. Please start Ollama first.', 'error');
+        checkOllamaStatus(); // Refresh status
+        return;
+      }
+
+      if (code.length > MAX_CODE_LENGTH) {
+        const ok = confirm(
+          'Your pasted code is large (' + code.length + ' chars). ' +
+          'To avoid long waits the app will send a truncated version (head + tail) to the model. Continue?'
+        );
+        if (!ok) return;
+      }
+
+      setLoadingState(true);
+      clearOutputs();
+      
+      try {
+        const res = await fetch('/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            code: code,
+            type: currentAnalysisType
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: 'Server error' }));
+          throw new Error(err.error || 'Unknown server error');
+        }
+
+        const data = await res.json();
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        // Update outputs
+        outputLanguage.textContent = data.language || currentLanguage;
+        
+        if (data.explanation) {
+          explanationOutput.textContent = data.truncated ? 
+            '[NOTE: Input was truncated to head+tail before sending to model.]\n\n' + data.explanation : 
+            data.explanation;
+        }
+        
+        if (data.refactor) {
+          refactorOutput.textContent = data.refactor;
+        }
+        
+        if (data.complexity) {
+          complexityOutput.textContent = data.complexity;
+        }
+        
+        if (data.security) {
+          securityOutput.textContent = data.security;
+        }
+        
+        showToast('Analysis completed successfully!', 'success');
+        
+      } catch (error) {
+        explanationOutput.textContent = 'Error: ' + error.message;
+        showToast('Error: ' + error.message, 'error');
+      } finally {
+        setLoadingState(false);
+      }
+    });
+    
+    // Clear inputs and outputs
+    clearBtn.addEventListener('click', () => {
+      codeInput.value = '';
+      clearOutputs();
+      updateStats();
+      showToast('Cleared all inputs and outputs.');
+    });
+    
+    // Format code (simple indentation)
+    formatBtn.addEventListener('click', () => {
+      const code = codeInput.value;
+      if (!code.trim()) return;
+      
+      // Simple formatting based on language
+      try {
+        if (currentLanguage === 'python') {
+          // Basic Python formatting - just fix indentation
+          const lines = code.split('\n');
+          let indentLevel = 0;
+          const formattedLines = [];
+          
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) {
+              formattedLines.push('');
+              continue;
+            }
+            
+            // Decrease indent after dedent lines
+            if (trimmed.startsWith('return') || trimmed.startsWith('pass') || 
+                trimmed.startsWith('break') || trimmed.startsWith('continue') ||
+                trimmed.startsWith('raise')) {
+              // Keep current indent
+            } else if (trimmed.startsWith('elif') || trimmed.startsWith('else') || 
+                      trimmed.startsWith('except') || trimmed.startsWith('finally')) {
+              indentLevel = Math.max(0, indentLevel - 1);
+            }
+            
+            // Add line with proper indentation
+            formattedLines.push('  '.repeat(indentLevel) + trimmed);
+            
+            // Increase indent for block starters
+            if (trimmed.endsWith(':') && !trimmed.startsWith('#') && 
+                !trimmed.includes('lambda:') && !trimmed.includes('def __') &&
+                !trimmed.startsWith('return') && !trimmed.startsWith('pass')) {
+              indentLevel++;
+            }
+          }
+          
+          codeInput.value = formattedLines.join('\n');
+        } else {
+          // For other languages, just fix basic indentation
+          const lines = code.split('\n');
+          let indentLevel = 0;
+          const formattedLines = [];
+          const openBraces = /(\{|\(|\[)$/;
+          const closeBraces = /^(\}|\)|\])/;
+          
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) {
+              formattedLines.push('');
+              continue;
+            }
+            
+            // Adjust indent level based on braces
+            if (closeBraces.test(trimmed)) {
+              indentLevel = Math.max(0, indentLevel - 1);
+            }
+            
+            formattedLines.push('  '.repeat(indentLevel) + trimmed);
+            
+            if (openBraces.test(trimmed)) {
+              indentLevel++;
+            }
+          }
+          
+          codeInput.value = formattedLines.join('\n');
+        }
+        
+        updateStats();
+        showToast('Code formatted.');
+      } catch (error) {
+        showToast('Formatting failed: ' + error.message, 'error');
+      }
+    });
+    
+    // Copy all results to clipboard
+    copyBtn.addEventListener('click', async () => {
+      const explanation = explanationOutput.textContent;
+      const refactor = refactorOutput.textContent;
+      const complexity = complexityOutput.textContent;
+      const security = securityOutput.textContent;
+      
+      const allContent = `EXPLANATION:\n${explanation}\n\nREFACTOR SUGGESTIONS:\n${refactor}\n\nCOMPLEXITY ANALYSIS:\n${complexity}\n\nSECURITY CONSIDERATIONS:\n${security}`;
+      
+      try {
+        await navigator.clipboard.writeText(allContent);
+        showToast('All results copied to clipboard!', 'success');
+      } catch (error) {
+        showToast('Failed to copy to clipboard.', 'error');
+      }
+    });
+    
+    // Clear all outputs
+    function clearOutputs() {
+      explanationOutput.textContent = 'Paste code on the left and click "Analyze Code".';
+      refactorOutput.textContent = 'Refactor suggestions will appear here.';
+      complexityOutput.textContent = 'Complexity analysis will appear here.';
+      securityOutput.textContent = 'Security considerations will appear here.';
+      outputLanguage.textContent = 'Unknown';
+    }
+    
+    // Set loading state
+    function setLoadingState(isLoading) {
+      runBtn.disabled = isLoading;
+      runBtn.textContent = isLoading ? 'Analyzing...' : 'Analyze Code';
+    }
+    
+    // Event listeners
+    codeInput.addEventListener('input', updateStats);
+  </script>
+</body>
+</html>
