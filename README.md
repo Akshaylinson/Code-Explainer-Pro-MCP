@@ -1,10 +1,6 @@
 Code Explainer Pro
 A professional-grade code analysis tool that provides detailed explanations, refactor suggestions, complexity analysis, and security reviews for your code. Powered by local Ollama LLM.
 
-https://img.shields.io/badge/Version-1.0.0-blue.svg
-https://img.shields.io/badge/Python-3.7%252B-green.svg
-https://img.shields.io/badge/Flask-2.3%252B-lightgrey.svg
-https://img.shields.io/badge/Ollama-Required-orange.svg
 
 ✨ Features
 Multi-Language Support: Automatically detects and analyzes code in Python, JavaScript, Java, C++, HTML, CSS, Go, Rust, Ruby, and PHP
