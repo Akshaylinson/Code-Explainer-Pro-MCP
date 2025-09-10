@@ -1,1 +1,5 @@
+# requirements.txt
+Flask>=2.2.5
+requests>=2.28.2
+python-dotenv>=1.0.0
 
